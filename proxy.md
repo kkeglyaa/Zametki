@@ -1,6 +1,8 @@
-прокси - install squid, открываем файл `sudo nano /etc/squid/squid.conf`, найти блок с http_access там по умолчанию стоит `http_access deny all` надо найти строку `acl localnet src` и добавить перед запретом строку `http_access allow localnet` и перезапустить `sudo systemctl restart squid`
+# прокси 
+install squid, открываем файл `sudo nano /etc/squid/squid.conf`, найти блок с http_access там по умолчанию стоит `http_access deny all` надо найти строку `acl localnet src` и добавить перед запретом строку `http_access allow localnet` и перезапустить `sudo systemctl restart squid`
 
-айкап - открываем `/etc/squid/squid.conf` добавляем в конец файла 
+## айкап 
+открываем `/etc/squid/squid.conf` добавляем в конец файла 
 
 `icap_enable on`
 `icap_service service_req reqmod_precache bypass=1 icap://<IP-адрес-IWTM-Web>:1344/request`
@@ -10,7 +12,8 @@
 
 после добавления перезапускаем `sudo systemctl restart squid`
 
-перехват https - создаем каталог для сертификатов 
+### перехват https 
+создаем каталог для сертификатов 
 
 `sudo mkdir /etc/squid/ssl_cert`
 `sudo chown -R squid:squid /etc/squid/ssl_cert/` 
@@ -20,7 +23,8 @@
 `sudo openssl req -new -newkey rsa:2048 -days 720 -nodes -x509 -keyout /etc/squid/ssl_cert/Iw.pem -out /etc/squid/ssl_cert/Iw.pem`
 на все вопросы ентер нажимаем
 
-squid.conf для ссл бамп - находим строку `http_port 3128` и комментриуем ее
+# squid.conf для ссл бамп 
+находим строку `http_port 3128` и комментриуем ее
 вместо не добавляем 
 
 `http_port 3128 ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=4MB cert=/etc/squid/ssl_cert/Iw.pem`
@@ -34,16 +38,18 @@ squid.conf для ссл бамп - находим строку `http_port 3128`
 
 (Путь к ssl_crtd_program может отличаться в зависимости от версии Squid в Astra — проверьте наличие файла security_file_certgen или ssl_crtd в /usr/lib/squid/)
 
-инициализируем бд сертификатов - `sudo /usr/lib/squid/security_file_certgen -c -s /var/lib/ssl_db -M 4MB`
+# инициализируем бд сертификатов 
+`sudo /usr/lib/squid/security_file_certgen -c -s /var/lib/ssl_db -M 4MB`
 `sudo chown -R squid:squid(officer вместо скюид) /var/lib/ssl_db`  
 перезапускаем так же 
 смотрим логи чтобы убедится что все равботает `sudo tail -f /var/log/squid/access.log`
 
-ВНИМАНИЕ 
+# ВНИМАНИЕ 
 (В Задании 8 (Модуль А) вам нужно будет создать нормальные сертификаты (CA, Intermediate, Server). Если вы настроите SSL Bump сейчас на самоподписанном сертификате, позже, когда будете менять сертификаты для IWTM, вам, возможно, придётся перегенерировать сертификат и для Squid (или использовать тот же CA). Для первого запуска и проверки работоспособности этого достаточно.)
 
-ПРО ИНДЕКСАТОР ПРЕДОСТЕРЕЖЕНИЯ 
-(1. Критически важная конфигурация: подключение к базе данных
+# ПРО ИНДЕКСАТОР ПРЕДОСТЕРЕЖЕНИЯ 
+(
+1. Критически важная конфигурация: подключение к базе данных
 Индексатору необходимо подключиться к вашей существующей базе данных IWTM-DB (PostgreSQL) для чтения и записи индексов. При установке мастер предложит вам ввести IP-адрес базы данных и имя базы данных. Если вы укажете неверный IP-адрес, база данных еще не будет готова или сеть между ними не будет доступна, установка может завершиться, но Индексатор не сможет нормально запуститься, и консоль будет продолжать показывать красный статус.
 
 2. Легко упускаемая конфигурация: кластер Consul
